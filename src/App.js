@@ -1,25 +1,97 @@
-import logo from './logo.svg';
 import './App.css';
+import React, { useEffect, useRef } from "react";
+
+function dibujarObstaculo(ctx){
+  for(let i = 0; i<2; i += 0.1){
+    ctx.beginPath();
+    ctx.strokeStyle = "grey";
+    ctx.lineWidth = 1;
+    ctx.moveTo(50*Math.cos(i*Math.PI)+250, 50*Math.sin(i*Math.PI)+100);
+    ctx.lineTo(50*Math.cos((i-0.1)*Math.PI)+250, 50*Math.sin((i-0.1)*Math.PI)+100);
+    ctx.stroke();
+  }
+}
+
+
+let flujo = [{x:-1, y:-1, vx: 10, vy: 0}];
+function crearParticulas() {
+  if (flujo[flujo.length - 1].x > 5) {
+    for (let i = 0; i < 200; i += 5) {
+      flujo.push({ x: 0, y: i, vx: 1, vy: 0});
+    }
+  }
+
+  if(flujo.length>3000){
+    for(let i = 0; i<30; i++){
+      flujo.splice(i,1);
+    }
+  }
+}
+
+function flujo1() {
+  flujo.map((particula) => {
+    particula.x += particula.vx;
+    particula.y += particula.vy;
+  });
+}
+
+function dibujar(ctx) {
+  crearParticulas();
+  flujo1();
+  flujo.map((particula) => {
+    ctx.beginPath();
+    ctx.strokeStyle = "blue";
+    ctx.lineWidth = 3;
+    ctx.moveTo(particula.x, particula.y);
+    ctx.lineTo(particula.x + 1, particula.y + 1);
+    ctx.stroke();
+  });
+}
+
+function ImpactoObstaculo(){
+  flujo.map((particula)=>{
+    if(Math.sqrt(Math.pow(particula.x-250, 2)+Math.pow(particula.y-100,2))<52){
+      let angulo = Math.atan((250-particula.x)/Math.abs(100-particula.y));
+      let signo = 100-particula.y;
+      if(angulo<Math.PI/4){
+        particula.vx = particula.vx*Math.cos(angulo);
+      }else{
+        particula.vx = -0.9*particula.vx*Math.sin(angulo);
+      };
+        particula.vy = -signo/Math.abs(signo)*Math.abs(particula.vx);
+    };
+  });
+  flujo.map((particula)=>{
+    if(particula.vy !== 0 && particula.vx<1){
+      particula.vx += 0.2;
+    }
+  })
+};
+
 
 function App() {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const context = canvas.getContext("2d");
+
+    function simulacion() {
+      context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+      dibujar(context);
+      dibujarObstaculo(context);
+      ImpactoObstaculo();
+      requestAnimationFrame(simulacion);
+    }
+    simulacion();
+  });
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div id="cuadro">
+      <canvas ref={canvasRef} width="500" height="200"></canvas>
     </div>
   );
 }
+
 
 export default App;
