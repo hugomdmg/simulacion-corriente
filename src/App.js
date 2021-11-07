@@ -15,9 +15,9 @@ function dibujarObstaculo(ctx){
 
 let flujo = [{x:-1, y:-1, vx: 10, vy: 0}];
 function crearParticulas() {
-  if (flujo[flujo.length - 1].x > 5) {
+  if (flujo[flujo.length - 1].x > 10) {
     for (let i = 0; i < 200; i += 5) {
-      flujo.push({ x: 0, y: i, vx: 1, vy: 0});
+      flujo.push({ x: 0, y: i, vx: 0.8, vy: 0});
     }
   }
 
@@ -63,7 +63,28 @@ function ImpactoObstaculo(){
   });
   flujo.map((particula)=>{
     if(particula.vy !== 0 && particula.vx<1){
-      particula.vx += 0.2;
+      particula.vx += 0.04;
+    }
+  })
+  flujo.map((particula)=>{
+    if(Math.abs(particula.vy)>0.4){
+      if(particula.y<50){
+        particula.vy += 0.2;
+      }
+      if(particula.y>150){
+        particula.vy -= 0.2;
+      }
+    }
+    if(particula.x>250 && Math.abs(particula.vy) < 0.3){
+      if(particula.y<46){
+        particula.vy += 0.01;
+      }
+      if(particula.y>154){
+        particula.vy -= 0.01;
+      }
+    }
+    if(Math.abs(particula.y - 100) < 4){
+      particula.vy = -1*particula.vy/4;
     }
   })
 };
